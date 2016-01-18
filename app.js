@@ -2,48 +2,64 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-let {Component} = React;
+import {createStore} from 'redux';
+
+const {Component} = React;
+
+// Reducer
+const counter = (state = 0, action) => {
+    switch (action.type) {
+        case 'INCREMENT':
+            return state + 1;
+        case 'DECREMENT':
+            return state - 1;
+        default:
+            return state;
+    }
+};
+
+// Store
+const store = createStore(counter);
+
+// Actions
+const incrementAction = () => store.dispatch({type: 'INCREMENT'});
+const decrementAction = () => store.dispatch({type: 'DECREMENT'});
 
 class App extends Component {
-  constructor(props){
-    super(props);
-    this.state = {
-      number: this.props.number || 0
+    constructor(props) {
+        super(props);
+        this.state = {
+            number: this.props.number || store.getState()
+        };
     }
-    this._increment = this._increment.bind(this);
-    this._decrement = this._decrement.bind(this);
-  }
 
-  render(){
-    let {number} = this.state;
-    return(
-      <div>
-        <h2>The number is = {number} </h2>
-        <div>
-            <button onClick={this._increment}>Increment</button>
-            <button onClick={this._decrement}>Decrement</button>
-        </div>
-      </div>
-    );
-  }
+    componentDidMount() {
+        store.subscribe(()=> {
+            this.setState({
+                number: store.getState()
+            });
+        });
+    }
 
-  _increment(){
-    this.setState({
-      number: this.state.number + 1
-    });
-  }
-  _decrement(){
-    this.setState({
-      number: this.state.number - 1
-    });
-  }
+    render() {
+        let {number} = this.state;
+        return (
+            <div>
+                <h2>The number is = {number} </h2>
+                <div>
+                    <button onClick={incrementAction}>Increment</button>
+                    <button onClick={decrementAction}>Decrement</button>
+                </div>
+            </div>
+        );
+    }
 }
 
-App.propTypes ={
-  number: React.PropTypes.number
-}
+App.propTypes = {
+    number: React.PropTypes.number
+};
 
 ReactDOM.render(
-  <App number={20}/>,
-  document.querySelector('#app')
-)
+    <App number={100}/>,
+    document.querySelector('#app')
+);

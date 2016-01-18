@@ -2,11 +2,13 @@
 var path = require('path');
 
 module.exports = {
-    entry: ['./app.js'],
+    entry: ['webpack/hot/dev-server', './app.js'],
     output: {
         path: path.resolve(__dirname, 'build'),
         filename: 'bundle.js'
     },
+    devtool: 'source-map',
+    publicPath: '/build/',
     module: {
         loaders: [
             {
