@@ -2,7 +2,8 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {createStore} from 'redux';
+import {createStore, bindActionCreators} from 'redux';
+import {connect, Provider} from 'react-redux';
 
 const {Component} = React;
 
@@ -21,45 +22,53 @@ const counter = (state = 0, action) => {
 // Store
 const store = createStore(counter);
 
-// Actions
-const incrementAction = () => store.dispatch({type: 'INCREMENT'});
-const decrementAction = () => store.dispatch({type: 'DECREMENT'});
-
-class App extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            number: this.props.number || store.getState()
-        };
+// create actions
+const counterActions = {
+    increment: function () {
+        return {type: 'INCREMENT'};
+    },
+    decrement: function () {
+        return {type: 'DECREMENT'};
     }
+};
 
-    componentDidMount() {
-        store.subscribe(()=> {
-            this.setState({
-                number: store.getState()
-            });
-        });
-    }
-
+// Counter presentational component
+class Counter extends Component {
     render() {
-        let {number} = this.state;
+        let {number, dispatch } = this.props;
+        let actions = bindActionCreators(counterActions, dispatch);
+
         return (
             <div>
                 <h2>The number is = {number} </h2>
                 <div>
-                    <button onClick={incrementAction}>Increment</button>
-                    <button onClick={decrementAction}>Decrement</button>
+                    <button onClick={actions.increment}>Increment</button>
+                    <button onClick={actions.decrement}>Decrement</button>
                 </div>
             </div>
         );
     }
 }
 
-App.propTypes = {
-    number: React.PropTypes.number
+Counter.propTypes = {
+    number: React.PropTypes.number.isRequired,
+    dispatch: React.PropTypes.func.isRequired
 };
 
+let mapStateToProps = state => {
+    return {
+        number: state
+    };
+};
+
+// The container component
+const App = connect(
+    mapStateToProps
+)(Counter);
+
 ReactDOM.render(
-    <App number={100}/>,
+    <Provider store={store}>
+        <App/>
+    </Provider>,
     document.querySelector('#app')
 );
