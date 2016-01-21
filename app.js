@@ -2,10 +2,10 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {createStore, applyMiddleware, bindActionCreators} from 'redux';
+import {createStore, applyMiddleware} from 'redux';
 import thunk from 'redux-thunk';
 import {connect, Provider} from 'react-redux';
-import * as actions from './actions';
+import {increment, decrement, asyncAction} from './actions';
 const {Component} = React;
 
 // Reducer
@@ -26,16 +26,28 @@ const store = createStoreWithMiddleware(counter);
 
 // Counter presentational component
 class Counter extends Component {
+
+    handleIncrementClick(){
+        let {dispatch} = this.props;
+        dispatch(increment());
+    }
+    handleDecrementClick(){
+        let {dispatch} = this.props;
+        dispatch(decrement());
+    }
+    handleAsyncAction(){
+        let {dispatch} = this.props;
+        dispatch(asyncAction());
+    }
     render() {
-        let {number, dispatch} = this.props;
-        let {increment, decrement, asyncAction} = bindActionCreators(actions, dispatch);
+        let {number} = this.props;
         return (
             <div>
                 <h2>The number is = {number} </h2>
                 <div>
-                    <button onClick={increment}>Increment</button>
-                    <button onClick={decrement}>Decrement</button>
-                    <button onClick={asyncAction}>Increment/Decrement from server</button>
+                    <button onClick={()=>this.handleIncrementClick()}>Increment</button>
+                    <button onClick={()=>this.handleDecrementClick()}>Decrement</button>
+                    <button onClick={()=>this.handleAsyncAction()}>Increment/Decrement from server</button>
                 </div>
             </div>
         );
