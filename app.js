@@ -2,10 +2,10 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {createStore, bindActionCreators} from 'redux';
+import {createStore, applyMiddleware} from 'redux';
+import thunk from 'redux-thunk';
 import {connect, Provider} from 'react-redux';
-import {getValueFromServer} from './api';
-
+import {increment, decrement, asyncAction} from './actions';
 const {Component} = React;
 
 // Reducer
@@ -20,38 +20,34 @@ const counter = (state = 0, {type, value=1}) => {
     }
 };
 
-// Store
-const store = createStore(counter);
-
-// create actions
-const counterActions = {
-    increment:    function (value) {
-        return {type: 'INCREMENT', value};
-    }, decrement: function (value) {
-        return {type: 'DECREMENT', value};
-    }
-};
+// Store with middleware
+const createStoreWithMiddleware = applyMiddleware(thunk)(createStore);
+const store = createStoreWithMiddleware(counter);
 
 // Counter presentational component
 class Counter extends Component {
-    render() {
-        let {number, dispatch } = this.props;
-        let actions = bindActionCreators(counterActions, dispatch);
-        let asyncClickHandler = () => {
-            getValueFromServer().then(data=> {
-                if( data.action === 'increment') {
-                    actions.increment(data.value);
-                } else {
-                    actions.decrement(data.value);
-                }
-            });
-        };
 
+    handleIncrementClick(){
+        let {dispatch} = this.props;
+        dispatch(increment());
+    }
+    handleDecrementClick(){
+        let {dispatch} = this.props;
+        dispatch(decrement());
+    }
+    handleAsyncAction(){
+        let {dispatch} = this.props;
+        dispatch(asyncAction());
+    }
+    render() {
+        let {number} = this.props;
         return (
             <div>
                 <h2>The number is = {number} </h2>
                 <div>
-                    <button onClick={asyncClickHandler}>Increment/Decrement</button>
+                    <button onClick={()=>this.handleIncrementClick()}>Increment</button>
+                    <button onClick={()=>this.handleDecrementClick()}>Decrement</button>
+                    <button onClick={()=>this.handleAsyncAction()}>Increment/Decrement from server</button>
                 </div>
             </div>
         );
@@ -59,7 +55,8 @@ class Counter extends Component {
 }
 
 Counter.propTypes = {
-    number: React.PropTypes.number.isRequired, dispatch: React.PropTypes.func.isRequired
+    number: React.PropTypes.number.isRequired,
+    dispatch: React.PropTypes.func.isRequired
 };
 
 let mapStateToProps = state => {
